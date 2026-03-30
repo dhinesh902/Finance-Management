@@ -23,15 +23,23 @@ const analytics = getAnalytics(app);
 export const messaging = getMessaging(app);
 
 export const generateToken = async () => {
-  const permission = await Notification.requestPermission();
-  console.log(permission);
-  if (permission === "granted") {
-    const token = await getToken(messaging, {
-      vapidKey:
-        "BNMR-GhrcLGJUAgSi1ZVUZyCAZjhDf1U8sGgLnxum4JtEePG3ZIhTIydSVQkPYcEvwueQr02TkVN0GuTxKFjMjA",
-    });
+  try {
+    if (!("Notification" in window)) {
+      console.log("This browser does not support notification.");
+      return;
+    }
+    const permission = await Notification.requestPermission();
+    console.log(permission);
+    if (permission === "granted") {
+      const token = await getToken(messaging, {
+        vapidKey:
+          "BNMR-GhrcLGJUAgSi1ZVUZyCAZjhDf1U8sGgLnxum4JtEePG3ZIhTIydSVQkPYcEvwueQr02TkVN0GuTxKFjMjA",
+      });
 
-    console.log(token);
+      console.log(token);
+    }
+  } catch (error) {
+    console.error("An error occurred while generating token:", error);
   }
 };
 
