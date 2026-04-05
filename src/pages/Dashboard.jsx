@@ -49,15 +49,17 @@ const Dashboard = () => {
             // Fetch Expenses
             const { data: expensesData } = await supabase
                 .from('expenses')
-                .select('amount, date, category, description')
+                .select('amount, date, category, description, status')
                 .eq('user_id', user.id)
 
             const totalIncome = incomeData?.reduce((acc, curr) => acc + curr.amount, 0) || 0
             const totalExpenses = expensesData?.reduce((acc, curr) => acc + curr.amount, 0) || 0
+            const pendingAmount = expensesData?.filter(e => e.status === 'Pending' || e.status === 'Unpaid').reduce((acc, curr) => acc + curr.amount, 0) || 0
 
             setStats({
                 totalIncome,
                 totalExpenses,
+                pendingAmount,
                 balance: totalIncome - totalExpenses,
                 monthlySavings: totalIncome > 0 ? ((totalIncome - totalExpenses) / totalIncome * 100).toFixed(1) : 0
             })
@@ -104,7 +106,7 @@ const Dashboard = () => {
             </div>
 
             {/* Stats Cards */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4 md:gap-6">
                 <StatCard
                     title="Total Income"
                     amount={stats.totalIncome}
@@ -124,6 +126,14 @@ const Dashboard = () => {
                     trendUp={false}
                 />
                 <StatCard
+                    title="Pending Amount"
+                    amount={stats.pendingAmount}
+                    icon={Calendar}
+                    color="text-amber-600"
+                    bgColor="bg-amber-50"
+                    trend="Needs attention"
+                />
+                <StatCard
                     title="Remaining Balance"
                     amount={stats.balance}
                     icon={Wallet}
@@ -135,8 +145,8 @@ const Dashboard = () => {
                     title="Monthly Savings"
                     amount={`${stats.monthlySavings}%`}
                     icon={ArrowUpRight}
-                    color="text-amber-600"
-                    bgColor="bg-amber-50"
+                    color="text-indigo-600"
+                    bgColor="bg-indigo-50"
                     trend="Goal: 20%"
                 />
             </div>

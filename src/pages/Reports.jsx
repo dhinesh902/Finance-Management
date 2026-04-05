@@ -1,24 +1,27 @@
 import { useState, useEffect } from 'react'
 import {
     BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer,
-    LineChart, Line, AreaChart, Area
+    AreaChart, Area
 } from 'recharts'
-import { Download, Filter, Calendar, TrendingUp, TrendingDown } from 'lucide-react'
+import { Filter, TrendingUp, ChevronDown } from 'lucide-react'
 import { supabase } from '../lib/supabase'
 import { useAuth } from '../context/AuthContext'
-import { format, subMonths, startOfMonth, endOfMonth } from 'date-fns'
+import { format, subMonths } from 'date-fns'
+import toast from 'react-hot-toast'
 
 const Reports = () => {
     const { user } = useAuth()
     const [monthlyData, setMonthlyData] = useState([])
     const [categoryData, setCategoryData] = useState([])
     const [loading, setLoading] = useState(true)
+    const [filterRange, setFilterRange] = useState(6) // Number of months
+    const [showFilters, setShowFilters] = useState(false)
 
     useEffect(() => {
         if (user) {
             fetchReportData()
         }
-    }, [user])
+    }, [user, filterRange])
 
     const fetchReportData = async () => {
         try {
@@ -36,8 +39,8 @@ const Reports = () => {
                 .select('amount, date, category')
                 .eq('user_id', user.id)
 
-            // Process Monthly Data (last 6 months)
-            const last6Months = Array.from({ length: 6 }, (_, i) => {
+            // Process Monthly Data based on filterRange
+            const monthArray = Array.from({ length: filterRange }, (_, i) => {
                 const date = subMonths(new Date(), i)
                 return {
                     month: format(date, 'MMM'),
@@ -48,7 +51,7 @@ const Reports = () => {
                 }
             }).reverse()
 
-            last6Months.forEach(m => {
+            monthArray.forEach(m => {
                 m.income = incomeData
                     ?.filter(i => i.date.startsWith(m.key))
                     .reduce((acc, curr) => acc + curr.amount, 0) || 0
@@ -60,7 +63,7 @@ const Reports = () => {
                 m.savings = m.income - m.expense
             })
 
-            setMonthlyData(last6Months)
+            setMonthlyData(monthArray)
 
             // Process Category Data (current month)
             const currentMonthKey = format(new Date(), 'yyyy-MM')
@@ -75,6 +78,7 @@ const Reports = () => {
 
         } catch (error) {
             console.error('Error fetching report data:', error)
+            toast.error('Failed to fetch report data')
         } finally {
             setLoading(false)
         }
@@ -87,15 +91,35 @@ const Reports = () => {
                     <h1 className="text-xl md:text-2xl font-bold text-slate-900">Financial Reports</h1>
                     <p className="text-sm md:text-base text-slate-500">In-depth analysis of your financial health.</p>
                 </div>
-                <div className="flex gap-2 w-full md:w-auto">
-                    <button className="flex-1 md:flex-none flex items-center justify-center gap-2 px-4 py-2 bg-white border border-slate-200 rounded-xl text-sm font-semibold text-slate-600 hover:bg-slate-50">
-                        <Download size={18} />
-                        Export PDF
-                    </button>
-                    <button className="flex-1 md:flex-none flex items-center justify-center gap-2 px-4 py-2 bg-primary text-white rounded-xl text-sm font-semibold hover:bg-blue-600 shadow-lg shadow-primary/20">
-                        <Filter size={18} />
-                        Filters
-                    </button>
+                <div className="flex gap-2 w-full md:w-auto relative">
+                    <div className="relative flex-1 md:flex-none">
+                        <button
+                            onClick={() => setShowFilters(!showFilters)}
+                            className="w-full flex items-center justify-center gap-2 px-4 py-2 bg-primary text-white rounded-xl text-sm font-semibold hover:bg-blue-600 shadow-lg shadow-primary/20"
+                        >
+                            <Filter size={18} />
+                            Last {filterRange} Months
+                            <ChevronDown size={14} className={`transition-transform ${showFilters ? 'rotate-180' : ''}`} />
+                        </button>
+
+                        {showFilters && (
+                            <div className="absolute top-full right-0 mt-2 w-48 bg-white rounded-2xl shadow-xl border border-slate-100 p-2 z-50 animate-in fade-in slide-in-from-top-2 duration-200">
+                                {[3, 6, 12, 24].map((range) => (
+                                    <button
+                                        key={range}
+                                        onClick={() => {
+                                            setFilterRange(range)
+                                            setShowFilters(false)
+                                        }}
+                                        className={`w-full text-left px-4 py-2.5 rounded-xl text-sm font-medium transition-colors ${filterRange === range ? 'bg-primary/10 text-primary' : 'text-slate-600 hover:bg-slate-50'
+                                            }`}
+                                    >
+                                        Last {range} Months
+                                    </button>
+                                ))}
+                            </div>
+                        )}
+                    </div>
                 </div>
             </div>
 
@@ -108,7 +132,7 @@ const Reports = () => {
                         <div className="flex items-center justify-between mb-8">
                             <div>
                                 <h3 className="font-bold text-slate-800">Income vs Expenses</h3>
-                                <p className="text-xs text-slate-400">Monthly comparison for last 6 months</p>
+                                <p className="text-xs text-slate-400">Monthly comparison for last {filterRange} months</p>
                             </div>
                             <TrendingUp size={20} className="text-emerald-500" />
                         </div>
@@ -200,3 +224,5 @@ const Reports = () => {
 }
 
 export default Reports
+
+

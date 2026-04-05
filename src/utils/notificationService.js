@@ -11,8 +11,10 @@ export const triggerNotification = async (expenseData) => {
   try {
     const { user_id, amount, status, date } = expenseData;
 
-    const message = `You have a pending expense payment of ₹${amount.toLocaleString()}.`;
-    const type = status === "Pending" ? "warning" : "error";
+    const message = status === "Paid"
+      ? `New expense recorded: ₹${amount.toLocaleString()} for ${expenseData.category}.`
+      : `You have a pending expense payment of ₹${amount.toLocaleString()} for ${expenseData.category}.`;
+    const type = status === "Paid" ? "success" : status === "Pending" ? "warning" : "error";
 
     // 1. Save to Supabase notifications table
     const { data, error } = await supabase.from("notifications").insert([

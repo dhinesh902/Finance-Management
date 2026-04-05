@@ -86,10 +86,8 @@ const Expenses = () => {
       });
       fetchExpenses();
 
-      // Trigger notification if pending/unpaid
-      if (expenseData.status === "Pending" || expenseData.status === "Unpaid") {
-        await triggerNotification(expenseData);
-      }
+      // Trigger notification
+      await triggerNotification(expenseData);
     } catch (error) {
       console.error("Error saving expense:", error);
       alert("Failed to save expense record");

@@ -100,10 +100,10 @@ const Notifications = () => {
                             >
                                 <div
                                     className={`shrink-0 w-10 h-10 md:w-12 md:h-12 rounded-xl md:rounded-2xl flex items-center justify-center ${n.type === "warning"
-                                            ? "bg-amber-100 text-amber-600"
-                                            : n.type === "success"
-                                                ? "bg-emerald-100 text-emerald-600"
-                                                : "bg-blue-100 text-blue-600"
+                                        ? "bg-amber-100 text-amber-600"
+                                        : n.type === "success"
+                                            ? "bg-emerald-100 text-emerald-600"
+                                            : "bg-blue-100 text-blue-600"
                                         }`}
                                 >
                                     {n.type === "warning" ? (
@@ -136,8 +136,8 @@ const Notifications = () => {
                                             </span>
                                             {n.expense_status && (
                                                 <span className={`text-[10px] font-bold px-2 py-0.5 rounded-md uppercase ${n.expense_status === 'Paid' ? 'bg-emerald-50 text-emerald-600' :
-                                                        n.expense_status === 'Pending' ? 'bg-amber-50 text-amber-600' :
-                                                            'bg-rose-50 text-rose-600'
+                                                    n.expense_status === 'Pending' ? 'bg-amber-50 text-amber-600' :
+                                                        'bg-rose-50 text-rose-600'
                                                     }`}>
                                                     {n.expense_status}
                                                 </span>
