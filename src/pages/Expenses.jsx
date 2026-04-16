@@ -18,6 +18,7 @@ const Expenses = () => {
     "Others",
   ];
   const [expenses, setExpenses] = useState([]);
+  const [totalIncome, setTotalIncome] = useState(0);
   const [showModal, setShowModal] = useState(false);
   const [editingItem, setEditingItem] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -33,8 +34,23 @@ const Expenses = () => {
   useEffect(() => {
     if (user) {
       fetchExpenses();
+      fetchTotalIncome();
     }
   }, [user]);
+
+  const fetchTotalIncome = async () => {
+    try {
+      const { data, error } = await supabase
+        .from("income")
+        .select("amount")
+        .eq("user_id", user.id);
+      if (error) throw error;
+      const total = data?.reduce((acc, curr) => acc + curr.amount, 0) || 0;
+      setTotalIncome(total);
+    } catch (error) {
+      console.error("Error fetching total income:", error);
+    }
+  };
 
   const fetchExpenses = async () => {
     try {
@@ -85,9 +101,16 @@ const Expenses = () => {
         status: "Paid",
       });
       fetchExpenses();
+      fetchTotalIncome();
 
-      // Trigger notification
-      await triggerNotification(expenseData);
+      // Calculate current total expenses (excluding the item if editing)
+      const currentTotalExpenses = expenses.reduce((acc, curr) => {
+        if (editingItem && curr.id === editingItem.id) return acc;
+        return acc + curr.amount;
+      }, 0);
+
+      // Trigger notification with income limit checks
+      await triggerNotification(expenseData, totalIncome, currentTotalExpenses);
     } catch (error) {
       console.error("Error saving expense:", error);
       alert("Failed to save expense record");
@@ -126,7 +149,7 @@ const Expenses = () => {
           <h1 className="text-xl md:text-2xl font-bold text-slate-900">
             Expense Management
           </h1>
-          <p className="text-sm md:text-base text-slate-500">
+          <p className="text-sm md:text-base text-slate-500 dark:text-slate-400">
             Keep track of every rupee you spend.
           </p>
         </div>
@@ -143,15 +166,15 @@ const Expenses = () => {
             });
             setShowModal(true);
           }}
-          className="flex items-center justify-center gap-2 bg-rose-600 hover:bg-rose-700 text-white px-5 py-2.5 rounded-xl font-bold transition-all shadow-lg shadow-rose-200 w-full md:w-auto"
+          className="flex items-center justify-center gap-2 bg-rose-600 hover:bg-rose-700 text-white px-5 py-2.5 rounded-xl font-bold transition-all shadow-lg shadow-rose-200 dark:shadow-none w-full md:w-auto"
         >
           <Plus size={20} />
           Add Expense
         </button>
       </div>
 
-      <div className="bg-white rounded-3xl border border-slate-100 shadow-sm overflow-hidden">
-        <div className="p-4 border-b border-slate-100 flex flex-col sm:flex-row items-center justify-between gap-4">
+      <div className="bg-white dark:bg-slate-900 rounded-3xl border border-slate-100 dark:border-slate-800 shadow-sm overflow-hidden transition-colors">
+        <div className="p-4 border-b border-slate-100 dark:border-slate-800 flex flex-col sm:flex-row items-center justify-between gap-4">
           <div className="relative w-full sm:w-64">
             <Search
               className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400"
@@ -160,11 +183,11 @@ const Expenses = () => {
             <input
               type="text"
               placeholder="Search description..."
-              className="w-full bg-slate-50 border border-slate-200 rounded-lg py-2 pl-10 pr-4 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20"
+              className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg py-2 pl-10 pr-4 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 dark:text-white"
             />
           </div>
           <div className="flex items-center gap-2 w-full sm:w-auto">
-            <select className="bg-slate-50 border border-slate-200 rounded-lg py-2 px-3 text-sm text-slate-600 focus:outline-none flex-1">
+            <select className="bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg py-2 px-3 text-sm text-slate-600 dark:text-slate-400 focus:outline-none flex-1">
               <option>All Categories</option>
               {categories.map((c) => (
                 <option key={c}>{c}</option>
@@ -176,7 +199,7 @@ const Expenses = () => {
         <div className="overflow-x-auto scrollbar-hide">
           <table className="w-full text-left min-w-[700px]">
             <thead>
-              <tr className="bg-slate-50 text-slate-500 text-xs font-bold uppercase tracking-wider">
+              <tr className="bg-slate-50 dark:bg-slate-800/50 text-slate-500 dark:text-slate-400 text-xs font-bold uppercase tracking-wider">
                 <th className="px-4 md:px-6 py-4">Date</th>
                 <th className="px-4 md:px-6 py-4">Category</th>
                 <th className="px-4 md:px-6 py-4">Description</th>
@@ -186,7 +209,7 @@ const Expenses = () => {
                 <th className="px-4 md:px-6 py-4 text-right">Actions</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-slate-50 text-slate-700">
+            <tbody className="divide-y divide-slate-50 dark:divide-slate-800 text-slate-700 dark:text-slate-200">
               {loading ? (
                 <tr>
                   <td colSpan="6" className="px-6 py-10 text-center">
@@ -261,18 +284,15 @@ const Expenses = () => {
       {/* Modal */}
       {showModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-          <div
-            className="absolute inset-0 bg-slate-900/40 backdrop-blur-sm"
-            onClick={() => setShowModal(false)}
-          ></div>
-          <div className="relative bg-white w-full max-w-md rounded-3xl shadow-2xl p-8 animate-in fade-in zoom-in duration-200">
+          <div className="absolute inset-0 bg-slate-900/40 backdrop-blur-sm" onClick={() => setShowModal(false)}></div>
+          <div className="relative bg-white dark:bg-slate-900 w-full max-w-lg rounded-3xl shadow-2xl p-8 border dark:border-slate-800">
             <div className="flex items-center justify-between mb-6">
-              <h2 className="text-xl font-bold text-slate-800">
-                {editingItem ? "Edit Expense" : "Add New Expense"}
+              <h2 className="text-xl font-bold text-slate-800 dark:text-white">
+                {editingItem ? "Update Expense" : "Add New Expense"}
               </h2>
               <button
                 onClick={() => setShowModal(false)}
-                className="p-2 hover:bg-slate-100 rounded-full transition-colors"
+                className="p-2 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-full transition-colors"
               >
                 <X size={20} className="text-slate-400" />
               </button>
@@ -281,7 +301,7 @@ const Expenses = () => {
             <form onSubmit={handleSubmit} className="space-y-4">
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-1">
-                  <label className="text-sm font-bold text-slate-600">
+                  <label className="text-sm font-bold text-slate-600 dark:text-slate-400">
                     Category
                   </label>
                   <select
@@ -289,7 +309,7 @@ const Expenses = () => {
                     onChange={(e) =>
                       setFormData({ ...formData, category: e.target.value })
                     }
-                    className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-2.5 focus:ring-2 focus:ring-primary/20 outline-none"
+                    className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl px-4 py-2.5 focus:ring-2 focus:ring-primary/20 outline-none dark:text-white"
                   >
                     {categories.map((c) => (
                       <option key={c} value={c}>
@@ -299,7 +319,7 @@ const Expenses = () => {
                   </select>
                 </div>
                 <div className="space-y-1">
-                  <label className="text-sm font-bold text-slate-600">
+                  <label className="text-sm font-bold text-slate-600 dark:text-slate-400">
                     Payment Method
                   </label>
                   <select
@@ -310,7 +330,7 @@ const Expenses = () => {
                         payment_method: e.target.value,
                       })
                     }
-                    className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-2.5 focus:ring-2 focus:ring-primary/20 outline-none"
+                    className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl px-4 py-2.5 focus:ring-2 focus:ring-primary/20 outline-none dark:text-white"
                   >
                     <option value="UPI">UPI</option>
                     <option value="Card">Card</option>
@@ -320,13 +340,13 @@ const Expenses = () => {
                 </div>
               </div>
               <div className="space-y-1">
-                <label className="text-sm font-bold text-slate-600">Status</label>
+                <label className="text-sm font-bold text-slate-600 dark:text-slate-400">Status</label>
                 <select
                   value={formData.status}
                   onChange={(e) =>
                     setFormData({ ...formData, status: e.target.value })
                   }
-                  className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-2.5 focus:ring-2 focus:ring-primary/20 outline-none"
+                  className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl px-4 py-2.5 focus:ring-2 focus:ring-primary/20 outline-none dark:text-white"
                 >
                   <option value="Paid">Paid</option>
                   <option value="Pending">Pending</option>
@@ -334,7 +354,7 @@ const Expenses = () => {
                 </select>
               </div>
               <div className="space-y-1">
-                <label className="text-sm font-bold text-slate-600">
+                <label className="text-sm font-bold text-slate-600 dark:text-slate-400">
                   Amount (₹)
                 </label>
                 <input
@@ -344,12 +364,12 @@ const Expenses = () => {
                   onChange={(e) =>
                     setFormData({ ...formData, amount: e.target.value })
                   }
-                  className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-2.5 focus:ring-2 focus:ring-primary/20 outline-none"
+                  className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl px-4 py-2.5 focus:ring-2 focus:ring-primary/20 outline-none dark:text-white"
                   placeholder="0.00"
                 />
               </div>
               <div className="space-y-1">
-                <label className="text-sm font-bold text-slate-600">Date</label>
+                <label className="text-sm font-bold text-slate-600 dark:text-slate-400">Date</label>
                 <input
                   type="date"
                   required
@@ -357,11 +377,11 @@ const Expenses = () => {
                   onChange={(e) =>
                     setFormData({ ...formData, date: e.target.value })
                   }
-                  className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-2.5 focus:ring-2 focus:ring-primary/20 outline-none"
+                  className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl px-4 py-2.5 focus:ring-2 focus:ring-primary/20 outline-none dark:text-white"
                 />
               </div>
               <div className="space-y-1">
-                <label className="text-sm font-bold text-slate-600">
+                <label className="text-sm font-bold text-slate-600 dark:text-slate-400">
                   Description
                 </label>
                 <input
@@ -370,13 +390,13 @@ const Expenses = () => {
                   onChange={(e) =>
                     setFormData({ ...formData, description: e.target.value })
                   }
-                  className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-2.5 focus:ring-2 focus:ring-primary/20 outline-none"
+                  className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl px-4 py-2.5 focus:ring-2 focus:ring-primary/20 outline-none dark:text-white"
                   placeholder="What was this for?"
                 />
               </div>
               <button
                 type="submit"
-                className="w-full bg-rose-600 text-white py-3 rounded-xl font-bold shadow-lg shadow-rose-200 hover:bg-rose-700 transition-all mt-4"
+                className="w-full bg-rose-600 text-white py-3 rounded-xl font-bold shadow-lg dark:shadow-none hover:bg-rose-700 transition-all mt-4"
               >
                 {editingItem ? "Update Expense" : "Add Expense"}
               </button>

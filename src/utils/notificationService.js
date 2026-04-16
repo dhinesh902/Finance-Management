@@ -7,16 +7,52 @@ import toast from "react-hot-toast";
  * 1. Saves notification to Supabase
  * 2. Triggers Firebase Cloud Messaging (FCM)
  */
-export const triggerNotification = async (expenseData) => {
+export const triggerNotification = async (expenseData, totalIncome, currentTotalExpenses = 0) => {
   try {
-    const { user_id, amount, status, date } = expenseData;
+    const { user_id, amount, status, date, category } = expenseData;
 
-    const message = status === "Paid"
-      ? `New expense recorded: ₹${amount.toLocaleString()} for ${expenseData.category}.`
-      : `You have a pending expense payment of ₹${amount.toLocaleString()} for ${expenseData.category}.`;
-    const type = status === "Paid" ? "success" : status === "Pending" ? "warning" : "error";
+    let message = status === "Paid"
+      ? `New expense recorded: ₹${amount.toLocaleString()} for ${category}.`
+      : `You have a pending expense payment of ₹${amount.toLocaleString()} for ${category}.`;
+    let type = status === "Paid" ? "success" : status === "Pending" ? "warning" : "error";
 
-    // 1. Save to Supabase notifications table
+    // Income limit checks
+    if (totalIncome > 0) {
+      const newTotal = currentTotalExpenses + amount;
+      if (newTotal > totalIncome) {
+        const limitExceededMessage = `⚠️ Budget Alert: Total expenses (₹${newTotal.toLocaleString()}) have exceeded your total income (₹${totalIncome.toLocaleString()})!`;
+
+        // Save alert to Supabase
+        await supabase.from("notifications").insert([{
+          user_id,
+          message: limitExceededMessage,
+          amount: newTotal - totalIncome,
+          expense_status: "Exceeded",
+          type: "error",
+          status: "unread",
+          created_at: new Date().toISOString(),
+        }]);
+
+        toast.error(limitExceededMessage, { duration: 6000 });
+      } else if (newTotal > totalIncome * 0.9) {
+        const nearLimitMessage = `🔔 Warning: Your total expenses are nearing your income limit (90% reached). Total: ₹${newTotal.toLocaleString()} / Income: ₹${totalIncome.toLocaleString()}`;
+
+        // Save warning to Supabase
+        await supabase.from("notifications").insert([{
+          user_id,
+          message: nearLimitMessage,
+          amount: newTotal,
+          expense_status: "Warning",
+          type: "warning",
+          status: "unread",
+          created_at: new Date().toISOString(),
+        }]);
+
+        toast(nearLimitMessage, { icon: "⚠️", duration: 5000 });
+      }
+    }
+
+    // 1. Save standard expense notification to Supabase
     const { data, error } = await supabase.from("notifications").insert([
       {
         user_id,
@@ -31,15 +67,11 @@ export const triggerNotification = async (expenseData) => {
 
     if (error) throw error;
 
-    // 2. Trigger FCM (Simulation/Client-side push)
-    // In a real production app, you would send this to your backend/edge function
-    // which would then call the Firebase Admin SDK to send the push notification.
-
-    // For demonstration, we'll show a browser notification if permission is granted
+    // 2. Trigger Browser Notification
     if ("Notification" in window && Notification.permission === "granted") {
-      new Notification("Pending Expense Alert", {
+      new Notification("Expense Alert", {
         body: message,
-        icon: "/logo.png", // Replace with your app logo
+        icon: "/logo.png",
       });
     }
 

@@ -119,12 +119,12 @@ const Budgets = () => {
         <div className="space-y-6">
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
                 <div>
-                    <h1 className="text-xl md:text-2xl font-bold text-slate-900">Budget Management</h1>
-                    <p className="text-sm md:text-base text-slate-500">Set limits and optimize your spending habits.</p>
+                    <h1 className="text-xl md:text-2xl font-bold text-slate-900 dark:text-white transition-colors">Budget Management</h1>
+                    <p className="text-sm md:text-base text-slate-500 dark:text-slate-400">Set limits and optimize your spending habits.</p>
                 </div>
                 <button
                     onClick={() => { setEditingItem(null); setFormData({ category: 'Food', budget_limit: '', month: format(new Date(), 'yyyy-MM') }); setShowModal(true); }}
-                    className="flex items-center justify-center gap-2 bg-primary hover:bg-blue-600 text-white px-5 py-2.5 rounded-xl font-bold transition-all shadow-lg w-full md:w-auto"
+                    className="flex items-center justify-center gap-2 bg-primary hover:bg-blue-600 text-white px-5 py-2.5 rounded-xl font-bold transition-all shadow-lg dark:shadow-none w-full md:w-auto"
                 >
                     <Plus size={20} />
                     Create Budget
@@ -135,7 +135,7 @@ const Budgets = () => {
                 {loading ? (
                     <div className="col-span-full py-20 flex justify-center"><div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div></div>
                 ) : budgets.length === 0 ? (
-                    <div className="col-span-full py-20 bg-white rounded-3xl border border-dashed border-slate-200 text-center text-slate-400">
+                    <div className="col-span-full py-20 bg-white dark:bg-slate-900 rounded-3xl border border-dashed border-slate-200 dark:border-slate-800 text-center text-slate-400">
                         No budgets set for this period.
                     </div>
                 ) : budgets.map((budget) => {
@@ -143,10 +143,10 @@ const Budgets = () => {
                     const isExceeded = percentage > 100
 
                     return (
-                        <div key={budget.id} className="bg-white rounded-3xl border border-slate-100 shadow-sm p-6 hover:shadow-md transition-shadow">
+                        <div key={budget.id} className="bg-white dark:bg-slate-900 rounded-3xl border border-slate-100 dark:border-slate-800 shadow-sm p-6 hover:shadow-md transition-all">
                             <div className="flex items-center justify-between mb-4">
-                                <div className="p-2 bg-slate-50 rounded-xl">
-                                    <h3 className="font-bold text-slate-800">{budget.category}</h3>
+                                <div className="p-2 bg-slate-50 dark:bg-slate-800/50 rounded-xl">
+                                    <h3 className="font-bold text-slate-800 dark:text-white">{budget.category}</h3>
                                 </div>
                                 <div className="flex gap-1">
                                     <button onClick={() => openEditModal(budget)} className="p-2 text-slate-400 hover:text-blue-600 rounded-lg hover:bg-blue-50 transition-colors"><Edit2 size={16} /></button>
@@ -157,16 +157,16 @@ const Budgets = () => {
                             <div className="space-y-4">
                                 <div className="flex items-end justify-between">
                                     <div>
-                                        <p className="text-xs text-slate-500 font-medium">Spent so far</p>
-                                        <p className="text-xl font-bold text-slate-900">₹{budget.spent.toLocaleString()}</p>
+                                        <p className="text-xs text-slate-500 dark:text-slate-400 font-medium">Spent so far</p>
+                                        <p className="text-xl font-bold text-slate-900 dark:text-white">₹{budget.spent.toLocaleString()}</p>
                                     </div>
                                     <div className="text-right">
-                                        <p className="text-xs text-slate-500 font-medium whitespace-nowrap">Monthly Goal</p>
-                                        <p className="text-sm font-bold text-slate-600">₹{budget.budget_limit.toLocaleString()}</p>
+                                        <p className="text-xs text-slate-500 dark:text-slate-400 font-medium whitespace-nowrap">Monthly Goal</p>
+                                        <p className="text-sm font-bold text-slate-600 dark:text-slate-300">₹{budget.budget_limit.toLocaleString()}</p>
                                     </div>
                                 </div>
 
-                                <div className="h-2 w-full bg-slate-100 rounded-full overflow-hidden">
+                                <div className="h-2 w-full bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden">
                                     <div
                                         className={`h-full rounded-full transition-all duration-500 ${isExceeded ? 'bg-rose-500' : 'bg-primary'}`}
                                         style={{ width: `${Math.min(percentage, 100)}%` }}
@@ -194,44 +194,44 @@ const Budgets = () => {
             {showModal && (
                 <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
                     <div className="absolute inset-0 bg-slate-900/40 backdrop-blur-sm" onClick={() => setShowModal(false)}></div>
-                    <div className="relative bg-white w-full max-w-md rounded-3xl shadow-2xl p-8">
+                    <div className="relative bg-white dark:bg-slate-900 w-full max-w-md rounded-3xl shadow-2xl p-8 border dark:border-slate-800">
                         <div className="flex items-center justify-between mb-6">
-                            <h2 className="text-xl font-bold text-slate-800">{editingItem ? 'Update Budget' : 'Set New Budget'}</h2>
-                            <button onClick={() => setShowModal(false)} className="p-2 hover:bg-slate-100 rounded-full transition-colors">
+                            <h2 className="text-xl font-bold text-slate-800 dark:text-white">{editingItem ? 'Update Budget' : 'Set New Budget'}</h2>
+                            <button onClick={() => setShowModal(false)} className="p-2 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-full transition-colors">
                                 <X size={20} className="text-slate-400" />
                             </button>
                         </div>
 
                         <form onSubmit={handleSubmit} className="space-y-4">
                             <div className="space-y-1">
-                                <label className="text-sm font-bold text-slate-600">Category</label>
+                                <label className="text-sm font-bold text-slate-600 dark:text-slate-400">Category</label>
                                 <select
                                     value={formData.category}
                                     onChange={(e) => setFormData({ ...formData, category: e.target.value })}
-                                    className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-2.5 focus:ring-2 focus:ring-primary/20 outline-none"
+                                    className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl px-4 py-2.5 focus:ring-2 focus:ring-primary/20 outline-none dark:text-white"
                                 >
                                     {categories.map(c => <option key={c} value={c}>{c}</option>)}
                                 </select>
                             </div>
                             <div className="space-y-1">
-                                <label className="text-sm font-bold text-slate-600">Monthly Limit (₹)</label>
+                                <label className="text-sm font-bold text-slate-600 dark:text-slate-400">Monthly Limit (₹)</label>
                                 <input
                                     type="number"
                                     required
                                     value={formData.budget_limit}
                                     onChange={(e) => setFormData({ ...formData, budget_limit: e.target.value })}
-                                    className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-2.5 focus:ring-2 focus:ring-primary/20 outline-none"
+                                    className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl px-4 py-2.5 focus:ring-2 focus:ring-primary/20 outline-none dark:text-white"
                                     placeholder="e.g. 5000"
                                 />
                             </div>
                             <div className="space-y-1">
-                                <label className="text-sm font-bold text-slate-600">Month</label>
+                                <label className="text-sm font-bold text-slate-600 dark:text-slate-400">Month</label>
                                 <input
                                     type="month"
                                     required
                                     value={formData.month}
                                     onChange={(e) => setFormData({ ...formData, month: e.target.value })}
-                                    className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-2.5 focus:ring-2 focus:ring-primary/20 outline-none"
+                                    className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl px-4 py-2.5 focus:ring-2 focus:ring-primary/20 outline-none dark:text-white"
                                 />
                             </div>
                             <button

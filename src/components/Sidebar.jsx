@@ -51,13 +51,13 @@ const Sidebar = ({ isOpen, toggleSidebar, mobileOpen, closeMobile }) => {
 
             <aside
                 className={cn(
-                    "fixed left-0 top-0 h-screen bg-white border-r border-slate-200 transition-all duration-300 z-50 flex flex-col",
+                    "fixed left-0 top-0 h-screen bg-white dark:bg-slate-900 border-r border-slate-200 dark:border-slate-800 transition-all duration-300 z-50 flex flex-col",
                     isOpen ? "w-64" : "w-20",
                     mobileOpen ? "translate-x-0" : "-translate-x-full lg:translate-x-0"
                 )}
             >
                 {/* Sidebar Header */}
-                <div className="h-16 flex items-center justify-between px-6 border-b border-slate-100">
+                <div className="h-16 flex items-center justify-between px-6 border-b border-slate-100 dark:border-slate-800">
                     {(isOpen || mobileOpen) && (
                         <div className="flex items-center gap-2 font-bold text-xl text-primary">
                             <div className="w-8 h-8 rounded-lg bg-primary flex items-center justify-center text-white">
@@ -73,7 +73,7 @@ const Sidebar = ({ isOpen, toggleSidebar, mobileOpen, closeMobile }) => {
                     )}
                     <button
                         onClick={toggleSidebar}
-                        className="hidden lg:flex absolute -right-3 top-20 bg-white border border-slate-200 rounded-full p-1 text-slate-500 hover:text-primary transition-colors shadow-sm"
+                        className="hidden lg:flex absolute -right-3 top-20 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-full p-1 text-slate-500 dark:text-slate-400 hover:text-primary transition-colors shadow-sm"
                     >
                         {isOpen ? <ChevronLeft size={16} /> : <ChevronRight size={16} />}
                     </button>
@@ -92,7 +92,7 @@ const Sidebar = ({ isOpen, toggleSidebar, mobileOpen, closeMobile }) => {
                                     "flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all duration-200 group",
                                     isActive
                                         ? "bg-primary text-white shadow-md shadow-primary/20"
-                                        : "text-slate-600 hover:bg-slate-50 hover:text-primary"
+                                        : "text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800 hover:text-primary"
                                 )}
                             >
                                 <item.icon size={22} className={cn("shrink-0", isActive ? "" : "group-hover:scale-110 transition-transform")} />
@@ -103,11 +103,11 @@ const Sidebar = ({ isOpen, toggleSidebar, mobileOpen, closeMobile }) => {
                 </nav>
 
                 {/* Sidebar Footer */}
-                <div className="p-3 border-t border-slate-100">
+                <div className="p-3 border-t border-slate-100 dark:border-slate-800">
                     <button
                         onClick={() => setShowLogoutConfirm(true)}
                         className={cn(
-                            "flex items-center gap-3 w-full px-3 py-2.5 rounded-xl text-red-500 hover:bg-red-50 transition-colors group",
+                            "flex items-center gap-3 w-full px-3 py-2.5 rounded-xl text-red-500 hover:bg-red-50 dark:hover:bg-red-900/10 transition-colors group",
                         )}
                     >
                         <LogOut size={22} className="shrink-0 group-hover:translate-x-1 transition-transform" />
@@ -123,25 +123,25 @@ const Sidebar = ({ isOpen, toggleSidebar, mobileOpen, closeMobile }) => {
                         className="absolute inset-0 bg-slate-900/40 backdrop-blur-sm"
                         onClick={() => setShowLogoutConfirm(false)}
                     ></div>
-                    <div className="relative bg-white w-full max-w-sm rounded-3xl shadow-2xl p-6 md:p-8 animate-in fade-in zoom-in duration-200">
+                    <div className="relative bg-white dark:bg-slate-900 w-full max-w-sm rounded-3xl shadow-2xl p-6 md:p-8 animate-in fade-in zoom-in duration-200 border dark:border-slate-800">
                         <div className="flex flex-col items-center text-center space-y-4">
-                            <div className="w-16 h-16 bg-red-50 rounded-full flex items-center justify-center text-red-500 mb-2">
+                            <div className="w-16 h-16 bg-red-50 dark:bg-red-900/10 rounded-full flex items-center justify-center text-red-500 mb-2">
                                 <LogOut size={32} />
                             </div>
                             <div>
-                                <h3 className="text-xl font-bold text-slate-900">Confirm Logout</h3>
-                                <p className="text-slate-500 mt-2">Are you sure you want to log out of your account?</p>
+                                <h3 className="text-xl font-bold text-slate-900 dark:text-white">Confirm Logout</h3>
+                                <p className="text-slate-500 dark:text-slate-400 mt-2">Are you sure you want to log out of your account?</p>
                             </div>
                             <div className="flex gap-3 w-full pt-4">
                                 <button
                                     onClick={() => setShowLogoutConfirm(false)}
-                                    className="flex-1 px-4 py-3 rounded-xl font-bold text-slate-600 bg-slate-100 hover:bg-slate-200 transition-all"
+                                    className="flex-1 px-4 py-3 rounded-xl font-bold text-slate-600 dark:text-slate-300 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 transition-all"
                                 >
                                     Cancel
                                 </button>
                                 <button
                                     onClick={handleLogout}
-                                    className="flex-1 px-4 py-3 rounded-xl font-bold text-white bg-red-500 hover:bg-red-600 shadow-lg shadow-red-200 transition-all"
+                                    className="flex-1 px-4 py-3 rounded-xl font-bold text-white bg-red-500 hover:bg-red-600 shadow-lg shadow-red-200 dark:shadow-none transition-all"
                                 >
                                     Logout
                                 </button>

@@ -9,7 +9,7 @@ const DashboardLayout = () => {
     const [isMobileOpen, setIsMobileOpen] = useState(false)
 
     return (
-        <div className="min-h-screen bg-slate-50 flex">
+        <div className="min-h-screen bg-slate-50 dark:bg-slate-950 flex transition-colors duration-300">
             <Sidebar
                 isOpen={isSidebarOpen}
                 toggleSidebar={() => setIsSidebarOpen(!isSidebarOpen)}
